@@ -1,0 +1,230 @@
+﻿@{
+    ViewBag.Title = "Xac nhan san pham say";
+}
+<div class="Commonheader">
+    <div class="HeaderTitle">
+        <span class="titleText" style="text-align:center;">Xac nhan san pham say</span>
+    </div>
+</div>
+<form>
+    <div class="frame">
+        <div class="divBody">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+                        <td style="width: 100px; text-align: right; padding-right: 5px;">Vi tri:</td>
+                        <td>
+                            <input disabled="" type="text" id="txtPlaceNo" size="5" style="background-color:Gainsboro;" onkeydown="return MoveToBarcode()">
+                        </td>
+                        <td>
+                            <input type="button" class="Button" id="btnMenu" value="Menu" onclick="Menu()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 100px; text-align: right; padding-right: 5px;">Ma vach:</td>
+                        <td>
+                            <input disabled="" type="text" id="txtBarcode" size="5" style="background-color:Gainsboro;" onkeydown="return ScanBarcodeBefore()">
+                        </td>
+                        <td>
+                            <input type="button" class="Button" id="btnClear" value="Lam moi" onclick="Clear()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Ket qua:</td>
+                        <td>
+                            <span id="lblResult" class="cResult"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="Message" style="height: 160px;">
+                <textarea readonly id="txtMessage" style="position:absolute;z-index:2;height: 156px;overflow-x: hidden;"></textarea>
+            </div>
+            <input type="button" id="btnEnd" class="Button" value="Ket thuc" onclick="End()" style="margin-left: 9px; width:95px; background-color:red;color:white;">
+            <input type="button" id="btnContinue" class="Button" value="Tiep tuc" onclick="Continue()" style="float:right; margin-right: 5px; width:120px; background-color:blue;color:white;visibility: visible;">
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    var Menu = function () {
+        window.location = '@Url.Action("Index", "Home")';
+    };
+
+    var End = function () {
+        var placeNo = document.getElementById('txtPlaceNo').value;
+        var barcode = document.getElementById('txtBarcode').value;
+        var result = document.getElementById('lblResult').innerText;
+        var message = document.getElementById('txtMessage').value;
+        window.location = '@Url.Action("End", "ScanBarcode")?placeNo=' + placeNo + '&barcode=' + barcode + '&result=' + result + '&message=' + message;
+    };
+
+    var Continue = function () {
+        var placeNo = document.getElementById('txtPlaceNo').value;
+        var barcode = document.getElementById('txtBarcode').value;
+        var result = document.getElementById('lblResult').innerText;
+        var message = document.getElementById('txtMessage').value;
+        window.location = '@Url.Action("Continue", "ScanBarcode")?placeNo=' + placeNo + '&barcode=' + barcode + '&result=' + result + '&message=' + message;
+    };
+
+    //Clear
+    var Clear = function () {
+        var result = document.getElementById('lblResult').innerText;
+        if (result != '') {
+            $.ajax({
+                type: "GET",
+                cache: false,
+                async: false,
+                url: '@Url.Action("Send_Alarm", "ScanBarcode")',
+                dataType: "text"
+            });
+        }
+
+        document.getElementById('lblResult').innerText = '';
+        document.getElementById('txtMessage').value = '';
+
+        document.getElementById('btnEnd').style.backgroundColor = '#eee';
+        document.getElementById('btnEnd').style.color = '#ccc';
+        document.getElementById("btnEnd").disabled = true;
+
+        document.getElementById('btnContinue').style.backgroundColor = '#eee';
+        document.getElementById('btnContinue').style.color = '#ccc';
+        document.getElementById("btnContinue").disabled = true;
+
+        document.getElementById('txtPlaceNo').value = '';
+        document.getElementById('txtPlaceNo').style.backgroundColor = 'White';
+        document.getElementById('txtPlaceNo').disabled = false;
+
+        document.getElementById('txtBarcode').value = '';
+        document.getElementById('txtBarcode').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtBarcode').disabled = true;
+
+        document.getElementById('txtPlaceNo').focus();
+        document.getElementById('txtPlaceNo').select();
+        SetStyleResultOK();
+    };
+
+    function SetStyleResultNG() {
+        document.getElementById('lblResult').style.backgroundColor = 'Red';
+    }
+
+    function SetStyleResultOK() {
+        document.getElementById('lblResult').style.backgroundColor = 'White';
+    }
+
+    //Kiểm tra ma vi tri
+    function CheckPlace(placeNo) {
+
+        //Kiểm tra giá trị đã nhập chưa
+        if (placeNo == '') {
+            document.getElementById('txtMessage').value = 'Hay nhap vi tri';
+            document.getElementById('txtPlaceNo').focus();
+            return false;
+        }
+
+        return true;
+    }
+    //Di chuyển con trỏ đến ô mã vạch
+    function MoveToBarcode() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+
+        var placeNoText = document.getElementById('txtPlaceNo').value;
+        var placeNo = $.trim(placeNoText);
+        document.getElementById('txtPlaceNo').value = placeNo;
+
+        if (!CheckPlace(placeNo)) {
+            return false;
+        }
+
+        document.getElementById('txtMessage').value = 'Hay nhap ma vach san pham';
+
+        document.getElementById('txtPlaceNo').disabled = true;
+        document.getElementById('txtPlaceNo').style.backgroundColor = 'Gainsboro';
+
+        document.getElementById('txtBarcode').disabled = false;
+        document.getElementById('txtBarcode').style.backgroundColor = '#FFFFFF';
+        document.getElementById('txtBarcode').focus();
+        return;
+    }
+
+    //Xử lý trước khi Xac nhan san pham say
+    function ScanBarcodeBefore() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+
+        //Kiểm tra giá trị đã nhập chưa
+        var barcode = document.getElementById('txtBarcode').value;
+        if (barcode == '') {
+            document.getElementById('txtMessage').value = 'Hay nhap ma vach san pham';
+            document.getElementById('txtBarcode').focus();
+            return false;
+        }
+
+        //Thông báo đang xử lý
+        document.getElementById('txtMessage').value = "Dang xu ly...";
+        setTimeout(ScanBarcode, 10);
+    }
+
+    //Xac nhan san pham say
+    function ScanBarcode() {
+        document.getElementById('txtBarcode').disabled = true;
+        var placeNo = document.getElementById('txtPlaceNo').value;
+        var barcode = document.getElementById('txtBarcode').value;
+
+        $.ajax({
+            type: "GET",
+            cache: false,
+            async: false,
+            url: '@Url.Action("Scan_Barcode", "ScanBarcode")?placeNo=' + placeNo + '&barcode=' + barcode,
+            dataType: "text",
+            success: SubmitAfter,
+            error: AjaxErrorSubmitAfter
+        });
+    }
+
+    //Xử lý sau khi Xac nhan san pham say
+    var SubmitAfter = function (data) {
+        var parameter = data.split("#");
+
+        var result = parameter[0];
+        var message = parameter[1];
+        var continues = parameter[2];
+
+        document.getElementById('lblResult').innerText = result;
+        document.getElementById('txtMessage').value = message;
+
+        if (result == 'NG') {
+            if (continues != '') {
+                document.getElementById('btnContinue').style.backgroundColor = 'Blue';
+                document.getElementById('btnContinue').style.color = 'White';
+                document.getElementById("btnContinue").disabled = false;
+            }
+            SetStyleResultNG();
+        } else {
+            SetStyleResultOK();
+        }
+
+        document.getElementById('btnEnd').style.backgroundColor = 'Red';
+        document.getElementById('btnEnd').style.color = 'White';
+        document.getElementById("btnEnd").disabled = false;
+
+        return false;
+    }
+
+    //Lỗi khi Xac nhan san pham say
+    var AjaxErrorSubmitAfter = function (xhr) {
+        if (xhr.status == 999) {
+            document.getElementById('txtMessage').value = 'Khong the ket noi duoc voi may chu';
+        } else if (xhr.status == 500) {
+            document.getElementById('txtMessage').value = 'Xac nhan san pham say that bai (ErrorCode: 500)';
+        };
+        document.getElementById('txtMessage').value = 'Xac nhan san pham say that bai (Error)';
+    }
+    
+    $(function () {
+        Clear();
+    });
+</script>
+

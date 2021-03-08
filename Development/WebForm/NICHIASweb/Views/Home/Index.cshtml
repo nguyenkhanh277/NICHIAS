@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "DryingHouse - Menu";
+}
+<div class="Commonheader">
+    <div class="HeaderTitle">
+        <span class="titleText" style="text-align:center;">DryingHouse - Menu</span>
+    </div>
+</div>
+<form>
+    <div class="frame">
+        <table style="width: 100%;">
+            <tbody>
+                <tr>
+                    <td style="padding-left:15px; text-align: left">Version: 01.08.2020</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="MenuBody">
+            @*<div style="display: block;" id="page1">*@
+            <input type="button" id="btnScanBarcode" class="Button" value="Xac nhan san pham say" onclick="scanBarcode()"><br>
+            <input type="button" id="btnStockOut" class="Button" value="Xuat hang" onclick="stockOut()">
+            @*<input type="button" id="btnCheckProduct" class="Button" value="Lich su say san pham" onclick="CheckProduct()">*@
+            @*</div>*@
+            @*<div style="display: block;" id="page2">*@
+            @*</div>*@
+            @*<div class="switch" style="text-align:center">
+            <input type="button" id="btnPage1" value="1" onclick="ChangePage(1)" disabled="">&nbsp;
+            <input type="button" id="btnPage2" value="2" onclick="ChangePage(2)">
+        </div>*@
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    //var maxPageCount = parseInt(2);
+
+    //$(document).ready(function () {
+
+    //    ChangePage(1);
+
+    //    if (1 == maxPageCount) {
+    //        document.getElementById('btnPage1').style.visibility = "hidden";
+    //    }
+    //});
+
+    //function ChangePage(index) {
+    //    for (i = 1; i <= maxPageCount; i++) {
+    //        document.getElementById('page' + i.toString()).style.display = 'none';
+    //        document.getElementById('btnPage' + i.toString()).disabled = false;
+    //    }
+
+    //    document.getElementById('page' + index.toString()).style.display = 'block';
+    //    document.getElementById('btnPage' + index.toString()).disabled = true;
+
+    //    var firstItem = pageFirstItemArray[index];
+    //    document.getElementById(firstItem).focus();
+    //}
+
+    var scanBarcode = function () {
+        window.location = '@Url.Action("Index", "ScanBarcode")';
+    };
+
+    var stockOut = function () {
+        window.location = '@Url.Action("Index", "StockOut")';
+    };
+
+    var CheckProduct = function () {
+        window.location = '@Url.Action("Index", "CheckProduct")';
+    };
+</script>
+

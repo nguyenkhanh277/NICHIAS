@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "Lich su say san pham";
+}
+<div class="Commonheader">
+    <div class="HeaderTitle">
+        <span class="titleText" style="text-align:center;">Lich su say san pham</span>
+    </div>
+</div>
+<form>
+    <div class="frame">
+        <div class="divBody">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr style="height: 50px;">
+                        <td style="text-align: right; padding-right: 5px;">Ma vach:</td>
+                        <td colspan="2">
+                            <input type="text" id="txtBarcode" size="19" style="ime-mode: disabled" onkeydown="return CheckProductBefore()">
+                        </td>
+                    </tr>
+                    <tr style="height: 50px;">
+                        <td colspan=3>
+                            &nbsp;<input type="button" id="btnMenu" class="Button" value="Menu" onclick="Menu()" style="width:100px;">
+                            <input type="button" id="btnClear" class="Button" value="Lam Moi" onclick="Clear()" style="width:100px;">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="Message" style="height: 480px;">
+                <table id="data-list" class="table table-bordered table-striped border-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center;vertical-align: middle;">Buoc say</th>
+                            <th style="text-align:center;vertical-align: middle;width:100px;">Vao</th>
+                            <th style="text-align:center;vertical-align: middle;width:100px;">Ra</th>
+                            <th style="text-align:center;vertical-align: middle;width:100px;">KQ</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src="~/bower_components/datatables.net/js/jquery.dataTables.min.js"></script>
+<script src="~/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+
+<script type="text/javascript">
+    
+    var Menu = function () {
+        window.location = '@Url.Action("Index", "Home")';
+    };
+
+    //Clear
+    var Clear = function () {
+        document.getElementById('txtMessage').value = '';
+        document.getElementById('txtBarcode').value = '';
+        document.getElementById('txtBarcode').focus();
+        document.getElementById('txtBarcode').select();
+    };
+
+    //Xử lý trước khi Kiem tra trang thai san pham say
+    function CheckProductBefore() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+
+        //Kiểm tra giá trị đã nhập chưa
+        var productCode = document.getElementById('txtBarcode').value;
+        if (productCode == '') {
+            document.getElementById('txtMessage').value = 'Hay nhap ma vach san pham';
+            document.getElementById('txtBarcode').focus();
+            return false;
+        }
+
+        //Thông báo đang xử lý
+        document.getElementById('txtMessage').value = "Dang xu ly...";
+        setTimeout(ScanBarcodePullOut, 10);
+    }
+
+    //Kiem tra trang thai san pham say
+    function ScanBarcodePullOut() {
+        document.getElementById('txtBarcode').disabled = true;
+        var barcode = document.getElementById('txtBarcode').value;
+
+        $.ajax({
+            type: "GET",
+            cache: false,
+            async: false,
+            url: '@Url.Action("Check_Product", "CheckProduct")?barcode=' + barcode,
+            dataType: "text",
+            success: SubmitAfter,
+            error: AjaxErrorSubmitAfter
+        });
+    }
+
+    //Xử lý sau khi Kiem tra trang thai san pham say
+    var SubmitAfter = function (data) {
+        document.getElementById('txtMessage').value = data;
+        return false;
+    }
+
+    //Lỗi khi Kiem tra trang thai san pham say
+    var AjaxErrorSubmitAfter = function (xhr) {
+        if (xhr.status == 999) {
+            document.getElementById('txtMessage').value = 'Khong the ket noi duoc voi may chu';
+        } else if (xhr.status == 500) {
+            document.getElementById('txtMessage').value = 'Kiem tra trang thai san pham say that bai (ErrorCode: 500)';
+        };
+        document.getElementById('txtMessage').value = 'Kiem tra trang thai san pham say that bai';
+    }
+
+    $(function () {
+        ReleaseView();
+    });
+</script>
+

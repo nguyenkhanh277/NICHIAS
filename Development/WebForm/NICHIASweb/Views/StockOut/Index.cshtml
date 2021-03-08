@@ -1,0 +1,143 @@
+﻿@{
+    ViewBag.Title = "Xuat hang";
+}
+<div class="Commonheader">
+    <div class="HeaderTitle">
+        <span class="titleText" style="text-align:center;">Xuat hang</span>
+    </div>
+</div>
+<form>
+    <div class="frame">
+        <div class="divBody">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+                        <td style="width: 100px; text-align: right; padding-right: 5px;">Ma vach:</td>
+                        <td>
+                            <input type="text" id="txtBarcode" size="5" onkeydown="return StockOutBefore()">
+                        </td>
+                        <td>
+                            <input type="button" class="Button" id="btnClear" value="Lam moi" onclick="Clear()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 100px; text-align: right; padding-right: 5px;"></td>
+                        <td>
+                            <input hidden type="text" size="1">
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Ket qua:</td>
+                        <td>
+                            <span id="lblResult" class="cResult"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="Message" style="height: 160px;">
+                <textarea readonly id="txtMessage" style="position:absolute;z-index:2;height: 156px;overflow-x: hidden;"></textarea>
+            </div>
+            <input type="button" id="btnMenu" class="Button" value="Menu" onclick="Menu()" style="margin-left: 9px; width:95px;">
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    var Menu = function () {
+        window.location = '@Url.Action("Index", "Home")';
+    };
+
+    //Clear
+    var Clear = function () {
+        document.getElementById('lblResult').innerText = '';
+        document.getElementById('txtMessage').value = '';
+
+        document.getElementById('txtBarcode').value = '';
+        document.getElementById('txtBarcode').style.backgroundColor = 'White';
+        document.getElementById('txtBarcode').disabled = false;
+
+        document.getElementById('txtBarcode').focus();
+        document.getElementById('txtBarcode').select();
+        SetStyleResultOK();
+    };
+
+    function SetStyleResultNG() {
+        document.getElementById('lblResult').style.backgroundColor = 'Red';
+    }
+
+    function SetStyleResultOK() {
+        document.getElementById('lblResult').style.backgroundColor = 'White';
+    }
+    
+    //Xử lý trước khi Xuat hang
+    function StockOutBefore() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+
+        //Kiểm tra giá trị đã nhập chưa
+        var barcode = document.getElementById('txtBarcode').value;
+        if (barcode == '') {
+            document.getElementById('txtMessage').value = 'Hay nhap ma vach san pham';
+            document.getElementById('txtBarcode').focus();
+            return false;
+        }
+
+        //Thông báo đang xử lý
+        document.getElementById('txtMessage').value = "Dang xu ly...";
+        setTimeout(StockOut, 10);
+    }
+
+    //Xuat hang
+    function StockOut() {
+        document.getElementById('txtBarcode').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtBarcode').disabled = true;
+        var barcode = document.getElementById('txtBarcode').value;
+
+        $.ajax({
+            type: "GET",
+            cache: false,
+            async: false,
+            url: '@Url.Action("Stock_Out", "StockOut")?barcode=' + barcode,
+            dataType: "text",
+            success: SubmitAfter,
+            error: AjaxErrorSubmitAfter
+        });
+    }
+
+    //Xử lý sau khi Xuat hang
+    var SubmitAfter = function (data) {
+        var parameter = data.split("#");
+
+        var result = parameter[0];
+        var message = parameter[1];
+
+        document.getElementById('lblResult').innerText = result;
+        document.getElementById('txtMessage').value = message;
+        document.getElementById('txtMessage').focus();
+
+        if (result == 'NG') {
+            SetStyleResultNG();
+        } else {
+            SetStyleResultOK();
+        }
+
+        return true;
+    }
+
+    //Lỗi khi Xuat hang
+    var AjaxErrorSubmitAfter = function (xhr) {
+        if (xhr.status == 999) {
+            document.getElementById('txtMessage').value = 'Khong the ket noi duoc voi may chu';
+        } else if (xhr.status == 500) {
+            document.getElementById('txtMessage').value = 'Xuat hang that bai (ErrorCode: 500)';
+        };
+        document.getElementById('txtMessage').value = 'Xuat hang that bai (Error)';
+    }
+    
+    $(function () {
+        Clear();
+    });
+</script>
+
