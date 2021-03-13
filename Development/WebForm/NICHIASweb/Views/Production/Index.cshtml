@@ -1,0 +1,287 @@
+﻿@{
+    ViewBag.Title = "Xác nhận sản phẩm";
+}
+<div class="Commonheader">
+    <div class="HeaderTitle">
+        <span class="titleText" style="text-align:center;">Xác nhận sản phẩm</span>
+    </div>
+</div>
+<form>
+    <div class="frame">
+        <div class="divBody">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+                        <td style="width: 40%; text-align: right; padding-right: 5px;">Mã NV:</td>
+                        <td style="width: 60%;">
+                            <input type="password" id="txtUsername" size="10" onkeydown="return Login()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Vị trí:</td>
+                        <td>
+                            <input disabled="" type="text" id="txtPlaceNo" style="ime-mode: disabled; background-color:Gainsboro;" onkeydown="return MoveToBarcode()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Mã vạch:</td>
+                        <td>
+                            <input disabled="" type="text" id="txtBarcode" style="ime-mode: disabled; background-color:Gainsboro;" onkeydown="return ProductionBefore()">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Kết quả:</td>
+                        <td>
+                            <span id="lblResult" class="cResult"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan=2>
+                            &nbsp;<input type="button" id="btnMenu" class="Button" value="Menu" onclick="Menu()" style="width:100px;">
+                            <input type="button" id="btnClear" class="Button" value="Làm mới" onclick="Clear()" style="width:100px;">
+                            <input type="button" id="btnLogout" class="Button" value="Đăng xuất" onclick="Logout()" style="float:right; margin-right: 10px;">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="Message" style="height: 160px;">
+                <textarea readonly id="txtMessage" style="position:absolute;z-index:2;height: 156px;overflow-x: hidden;"></textarea>
+            </div>
+            <input type="button" id="btnEnd" class="Button" value="Kết thúc" onclick="End()" style="margin-left: 10px; width:120px; background-color:red;color:white;">
+            <input type="button" id="btnContinue" class="Button" value="Tiếp tục" onclick="Continue()" style="float:right; margin-right: 10px; width:120px; background-color:blue;color:white;visibility: visible;">
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    var Menu = function () {
+        window.location = '@Url.Action("Index", "Home")';
+    };
+    var End = function () {
+        var username = $.trim(document.getElementById("txtUsername").value);
+        var placeNo = $.trim(document.getElementById('txtPlaceNo').value);
+        var barcode = $.trim(document.getElementById('txtBarcode').value);
+        var result = $.trim(document.getElementById('lblResult').innerText);
+        var message = $.trim(document.getElementById('txtMessage').value);
+        window.location = '@Url.Action("End", "Production")?username=' + username + '&placeNo=' + placeNo + '&barcode=' + barcode + '&result=' + result + '&message=' + message;
+    };
+    var Continue = function () {
+        var username = $.trim(document.getElementById("txtUsername").value);
+        var placeNo = $.trim(document.getElementById('txtPlaceNo').value);
+        var barcode = $.trim(document.getElementById('txtBarcode').value);
+        var result = $.trim(document.getElementById('lblResult').innerText);
+        var message = $.trim(document.getElementById('txtMessage').value);
+        window.location = '@Url.Action("Continue", "Production")?username=' + username + '&placeNo=' + placeNo + '&barcode=' + barcode + '&result=' + result + '&message=' + message;
+    };
+    //Đăng nhập
+    function Login() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+        //Kiểm tra giá trị đã nhập chưa
+        var username = $.trim(document.getElementById("txtUsername").value);
+        if (username == '') {
+            document.getElementById('txtMessage').value = 'Hãy nhập tài khoản';
+            document.getElementById('txtUsername').focus();
+            return false;
+        }
+        //Xác minh người dùng
+        $.ajax({
+            type: "GET",
+            cache: false,
+            async: false,
+            url: '@Url.Action("Login", "Home")?username=' + username + '&functionName=VerifyProduct',
+            dataType: "text",
+            success: LoginAfter,
+            error: AjaxErrorAfter
+        });
+        return false;
+    }
+    //Xử lý giao diện sau khi xác minh mã người dùng
+    var LoginAfter = function (data) {
+        var parameter = data.split("#");
+        var result = parameter[0];
+        var message = parameter[1];
+        if (result == 'OK') {
+            document.getElementById('txtMessage').value = 'Hãy nhập mã vị trí';
+
+            document.getElementById("btnClear").disabled = false;
+            document.getElementById('btnClear').style.color = 'Black';
+
+            document.getElementById('txtUsername').disabled = true;
+            document.getElementById('txtUsername').style.backgroundColor = 'Gainsboro';
+
+            document.getElementById('txtPlaceNo').disabled = false;
+            document.getElementById('txtPlaceNo').style.backgroundColor = 'White';
+
+            document.getElementById('txtBarcode').disabled = false;
+            document.getElementById('txtBarcode').style.backgroundColor = 'Gainsboro';
+
+            document.getElementById('txtPlaceNo').focus();
+            document.getElementById('txtPlaceNo').select();
+            return;
+        } else {
+            Logout();
+            document.getElementById('txtMessage').value = message;
+            return false;
+        }
+    }
+    //Lỗi khi đăng nhập
+    var AjaxErrorAfter = function () {
+        Logout();
+        document.getElementById('txtMessage').value = 'Đăng nhập thất bại';
+    }
+    //Đăng xuất
+    var Logout = function () {
+        document.getElementById('lblResult').innerText = '';
+        document.getElementById('txtMessage').value = '';
+        document.getElementById('btnClear').style.color = '#ccc';
+        document.getElementById("btnClear").disabled = true;
+        document.getElementById('btnEnd').style.backgroundColor = '#eee';
+        document.getElementById('btnEnd').style.color = '#ccc';
+        document.getElementById("btnEnd").disabled = true;
+        document.getElementById('btnContinue').style.backgroundColor = '#eee';
+        document.getElementById('btnContinue').style.color = '#ccc';
+        document.getElementById("btnContinue").disabled = true;
+        document.getElementById('txtPlaceNo').value = '';
+        document.getElementById('txtPlaceNo').disabled = true;
+        document.getElementById('txtPlaceNo').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtBarcode').value = '';
+        document.getElementById('txtBarcode').disabled = true;
+        document.getElementById('txtBarcode').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtUsername').style.backgroundColor = 'White';
+        document.getElementById('txtUsername').disabled = false;
+        document.getElementById('txtUsername').value = '';
+        document.getElementById("txtUsername").focus();
+        document.getElementById('txtUsername').select();
+        SetStyleResultOK();
+    };
+    //Clear
+    var Clear = function () {
+        document.getElementById('lblResult').innerText = '';
+        document.getElementById('txtMessage').value = '';
+        document.getElementById('btnEnd').style.backgroundColor = '#eee';
+        document.getElementById('btnEnd').style.color = '#ccc';
+        document.getElementById("btnEnd").disabled = true;
+        document.getElementById('btnContinue').style.backgroundColor = '#eee';
+        document.getElementById('btnContinue').style.color = '#ccc';
+        document.getElementById("btnContinue").disabled = true;
+        document.getElementById('txtPlaceNo').value = '';
+        document.getElementById('txtPlaceNo').style.backgroundColor = 'White';
+        document.getElementById('txtPlaceNo').disabled = false;
+        document.getElementById('txtBarcode').value = '';
+        document.getElementById('txtBarcode').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtBarcode').disabled = true;
+        document.getElementById('txtPlaceNo').focus();
+        document.getElementById('txtPlaceNo').select();
+        SetStyleResultOK();
+    };
+    function SetStyleResultNG() {
+        document.getElementById('lblResult').style.backgroundColor = 'Red';
+        document.getElementById('lblResult').style.color = 'White';
+    }
+    function SetStyleResultOK() {
+        document.getElementById('lblResult').style.backgroundColor = 'White';
+        document.getElementById('lblResult').style.color = 'Black';
+    }
+    //Kiểm tra ma vi tri
+    function CheckPlace(placeNo) {
+        //Kiểm tra giá trị đã nhập chưa
+        if (placeNo == '') {
+            document.getElementById('txtMessage').value = 'Hãy nhập mã vị trí';
+            document.getElementById('txtPlaceNo').focus();
+            document.getElementById('txtPlaceNo').select();
+            return false;
+        }
+        return true;
+    }
+    //Di chuyển con trỏ đến ô mã vạch
+    function MoveToBarcode() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+        var placeNo = $.trim(document.getElementById('txtPlaceNo').value);
+        document.getElementById('txtPlaceNo').value = placeNo;
+        if (!CheckPlace(placeNo)) {
+            return false;
+        }
+        document.getElementById('txtMessage').value = 'Hãy nhập mã vạch sản phẩm';
+        document.getElementById('txtPlaceNo').disabled = true;
+        document.getElementById('txtPlaceNo').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtBarcode').disabled = false;
+        document.getElementById('txtBarcode').style.backgroundColor = 'White';
+        document.getElementById('txtBarcode').focus();
+        document.getElementById('txtBarcode').select();
+        return;
+    }
+    //Xử lý trước khi Xác nhận sản phẩm
+    function ProductionBefore() {
+        if (!event.keyCode || (event.keyCode != 13 && event.keyCode != 9)) {
+            return;
+        }
+        //Kiểm tra giá trị đã nhập chưa
+        var barcode = $.trim(document.getElementById('txtBarcode').value);
+        if (barcode == '') {
+            document.getElementById('txtMessage').value = 'Hãy nhập mã vạch sản phẩm';
+            document.getElementById('txtBarcode').focus();
+            document.getElementById('txtBarcode').select();
+            return false;
+        }
+        document.getElementById('lblResult').focus();
+        //Thông báo đang xử lý
+        document.getElementById('txtMessage').value = "Đang xử lý...";
+        setTimeout(Production, 10);
+    }
+    //Xác nhận sản phẩm
+    function Production() {
+        document.getElementById('txtBarcode').style.backgroundColor = 'Gainsboro';
+        document.getElementById('txtBarcode').disabled = true;
+        var username = $.trim(document.getElementById('txtUsername').value);
+        var placeNo = $.trim(document.getElementById('txtPlaceNo').value);
+        var barcode = $.trim(document.getElementById('txtBarcode').value);
+        $.ajax({
+            type: "GET",
+            cache: false,
+            async: false,
+            url: '@Url.Action("VerifyProduct", "Production")?username=' + username + '&placeNo=' + placeNo + '&barcode=' + barcode,
+            dataType: "text",
+            success: SubmitAfter,
+            error: AjaxErrorSubmitAfter
+        });
+    }
+    //Xử lý sau khi Xác nhận sản phẩm
+    var SubmitAfter = function (data) {
+        var parameter = data.split("#");
+        var result = parameter[0];
+        var message = parameter[1];
+        var continues = parameter[2];
+        document.getElementById('lblResult').innerText = result;
+        document.getElementById('txtMessage').value = message;
+        if (result == 'NG') {
+            if (continues != '') {
+                document.getElementById('btnContinue').style.backgroundColor = 'Blue';
+                document.getElementById('btnContinue').style.color = 'White';
+                document.getElementById("btnContinue").disabled = false;
+            }
+            SetStyleResultNG();
+        } else {
+            SetStyleResultOK();
+        }
+        document.getElementById('btnEnd').style.backgroundColor = 'Red';
+        document.getElementById('btnEnd').style.color = 'White';
+        document.getElementById("btnEnd").disabled = false;
+
+        return false;
+    }
+    var AjaxErrorSubmitAfter = function (xhr) {
+        if (xhr.status == 999) {
+            document.getElementById('txtMessage').value = 'Không thể kết nối với máy chủ';
+        } else if (xhr.status == 500) {
+            document.getElementById('txtMessage').value = 'Xác nhận sản phẩm thất bại (ErrorCode: 500)';
+        };
+        document.getElementById('txtMessage').value = 'Xác nhận sản phẩm thất bại (Error)';
+    }
+    $(function () {
+        Logout();
+    });
+</script>
+

@@ -10,7 +10,7 @@ namespace NICHIASweb.Models
     public class DbBusiness
     {
         #region User
-        public bool ExistOperator(string username, SqlConnection cn)
+        public bool ExistUser(string username, SqlConnection cn)
         {
             bool result = false;
             try
@@ -30,15 +30,14 @@ namespace NICHIASweb.Models
             return result;
         }
 
-        public bool CheckAuthorization(string username, string programName, string functionName, SqlConnection cn)
+        public bool CheckAuthorization(string username, string functionName, SqlConnection cn)
         {
             bool result = false;
             try
             {
                 string query = @"SELECT UserAuthorities.UserId
-                                FROM UserAuthorities LEFT JOIN 
-                                     ProgramFunctionAuthorities ON UserAuthorities.Id = ProgramFunctionAuthorities.AuthorityGroupID
-                                WHERE UserAuthorities.UserId = N'" + username + "' AND ProgramFunctionAuthorities.ProgramName = N'" + programName + "' AND ProgramFunctionAuthorities.FunctionName = N'" + functionName + "'";
+                                FROM UserAuthorities
+                                WHERE UserAuthorities.UserId = N'" + username + "' AND UserAuthorities.FunctionName = N'" + functionName + "'";
                 SqlCommand cmd = new SqlCommand(query, cn);
                 SqlDataReader reader = cmd.ExecuteReader();
                 if (reader.HasRows)
@@ -54,7 +53,7 @@ namespace NICHIASweb.Models
         }
         #endregion
 
-        #region ScanBarcode
+        #region Production
         public float GetDungSai(SqlConnection cn)
         {
             float result = 5;
@@ -105,7 +104,7 @@ namespace NICHIASweb.Models
                 string dk = "";
                 if (!String.IsNullOrEmpty(barcode))
                 {
-                    dk += " AND StepNo NOT IN (SELECT StepNo FROM ScanBarcodes WHERE ScanOut IS NOT NULL AND Barcode = N'" + barcode + @"') ";
+                    dk += " AND StepNo NOT IN (SELECT StepNo FROM Productions WHERE ScanOut IS NOT NULL AND Barcode = N'" + barcode + @"') ";
                 }
                 string query = "SELECT TOP 1 StepNo FROM Steps WHERE StepName = N'" + stepName + "' " + dk + " ORDER BY StepNo";
                 SqlDataAdapter adp = new SqlDataAdapter(query, cn);
@@ -165,13 +164,13 @@ namespace NICHIASweb.Models
             return tbl;
         }
 
-        public DataTable GetScanBarcode(string barcode, string stepNo, SqlConnection cn)
+        public DataTable GetProduction(string barcode, string stepNo, SqlConnection cn)
         {
             DataTable tbl = new DataTable();
             try
             {
                 string dk = (String.IsNullOrEmpty(stepNo) ? "" : " AND StepNo = '" + stepNo + @"' ");
-                string query = @"SELECT Id, StepNo, ScanIn, ScanOut, CompletedStatus FROM ScanBarcodes
+                string query = @"SELECT Id, StepNo, ScanIn, ScanOut, CompletedStatus FROM Productions
                                 WHERE Barcode = N'" + barcode + "'" + dk +
                                 " ORDER BY StepNo DESC";
                 SqlDataAdapter adp = new SqlDataAdapter(query, cn);
@@ -213,7 +212,7 @@ namespace NICHIASweb.Models
             bool result = false;
             try
             {
-                string query = "INSERT INTO ScanBarcodes(Id, Barcode, PartNumber, StepNo, ScanIn, Limit, DryingTime, ResultStatus, CompletedStatus, Status, CreatedAt, CreatedBy) VALUES(N'" +
+                string query = "INSERT INTO Productions(Id, Barcode, PartNumber, StepNo, ScanIn, Limit, DryingTime, ResultStatus, CompletedStatus, Status, CreatedAt, CreatedBy) VALUES(N'" +
                     Guid.NewGuid().ToString() + "', N'" +
                     barcode + "', N'" +
                     partNumber + "', N'" +
@@ -228,7 +227,7 @@ namespace NICHIASweb.Models
                     username + "');";
                 if (!String.IsNullOrEmpty(idPrev))
                 {
-                    query += "UPDATE ScanBarcodes SET " +
+                    query += "UPDATE Productions SET " +
                          "ScanOut = N'" + timeEndPrev.ToString("yyyy-MM-dd HH:mm:ss") + "'," +
                          "DryingTime = N'" + dryingTimePrev.ToString() + "'," +
                          "ResultStatus = N'" + resultStatusPrev + "'," +
@@ -257,7 +256,7 @@ namespace NICHIASweb.Models
             bool result = false;
             try
             {
-                string query = "UPDATE ScanBarcodes SET " +
+                string query = "UPDATE Productions SET " +
                     "ScanOut = N'" + timeEndCurrent.ToString("yyyy-MM-dd HH:mm:ss") + "'," +
                     "DryingTime = N'" + dryingTimeCurrent.ToString() + "'," +
                     "ResultStatus = N'" + resultStatusCurrent + "'," +
@@ -268,7 +267,7 @@ namespace NICHIASweb.Models
                     " WHERE Id = N'" + idCurrent + "';";
                 if (dryingTimeNext > 0)
                 {
-                    query += "INSERT INTO ScanBarcodes(Id, Barcode, PartNumber, StepNo, ScanIn, Limit, DryingTime, ResultStatus, CompletedStatus, Status, CreatedAt, CreatedBy) VALUES(N'" +
+                    query += "INSERT INTO Productions(Id, Barcode, PartNumber, StepNo, ScanIn, Limit, DryingTime, ResultStatus, CompletedStatus, Status, CreatedAt, CreatedBy) VALUES(N'" +
                         Guid.NewGuid().ToString() + "', N'" +
                         barcode + "', N'" +
                         partNumber + "', N'" +
@@ -323,34 +322,6 @@ namespace NICHIASweb.Models
             }
             return result;
         }
-
-        public bool SendAlarm(string barcode, string partNumber, int stepNoCurrent, string message, int alarmStatus, string username, SqlConnection cn)
-        {
-            bool result = false;
-            try
-            {
-                string query = "INSERT INTO Alarms(Id, Barcode, PartNumber, StepNo, Message, AlarmDate, AlarmStatus) VALUES(N'" +
-                    Guid.NewGuid().ToString() + "', N'" +
-                    barcode + "', N'" +
-                    partNumber + "', N'" +
-                    stepNoCurrent + "', N'" +
-                    message + "', N'" +
-                    DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "', N'" +
-                    alarmStatus + "');";
-                SqlCommand command = new SqlCommand(query);
-                command.Connection = cn;
-                command.ExecuteNonQuery();
-                result = true;
-            }
-            catch (Exception ex) { }
-            finally
-            {
-                if (cn.State != ConnectionState.Closed)
-                    cn.Close();
-            }
-            return result;
-        }
-
         #endregion
     }
 }

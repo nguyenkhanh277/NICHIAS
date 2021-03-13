@@ -14,8 +14,8 @@ namespace NICHIASweb.Controllers
             return View();
         }
 
-        [ActionName("CheckUser")]
-        public ActionResult CheckUser(string username, string programName, string functionName)
+        [ActionName("Login")]
+        public ActionResult Login(string username, string functionName)
         {
             ConnectionManagement connectionManagement = new ConnectionManagement();
             DbBusiness dbBusiness = new DbBusiness();
@@ -23,29 +23,29 @@ namespace NICHIASweb.Controllers
             string description = "";
             try
             {
-                if (!dbBusiness.ExistOperator(username, connectionManagement.GetDefaultConnection()))
+                //if (!dbBusiness.ExistUser(username, connectionManagement.GetDefaultConnection()))
+                //{
+                //    result = "NG";
+                //    description = "Tài khoản này không tồn tại";
+                //}
+                //else
                 {
-                    result = "NG";
-                    description = "Ma nguoi dung nay khong ton tai";
-                }
-                else
-                {
-                    //if (!dbBusiness.CheckAuthorization(username, programName, functionName, connectionManagement.GetDefaultConnection()))
+                    //if (!dbBusiness.CheckAuthorization(username, functionName, connectionManagement.GetDefaultConnection()))
                     //{
                     //    result = "NG";
-                    //    description = "Ma nguoi dung nay khong co quyen";
+                    //    description = "Tài khoản này không có quyền";
                     //}
                     //else
-                    //{
-                    result = "OK";
-                    description = "";
-                    //}
+                    {
+                        result = "OK";
+                        description = "";
+                    }
                 }
             }
             catch
             {
                 result = "NG";
-                description = "Khong the ket noi toi may chu";
+                description = "Không thể kết nối với máy chủ";
             }
             return Content(result + "#" + description);
         }

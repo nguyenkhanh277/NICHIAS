@@ -1,0 +1,97 @@
+﻿@{
+    ViewBag.Title = "Tiếp tục chuyển công đoạn";
+}
+<div class="Commonheader">
+    <div class="HeaderTitle">
+        <span class="titleText" style="text-align:center;">Tiếp tục chuyển công đoạn</span>
+    </div>
+</div>
+<form>
+    <div class="frame">
+        <div class="divBody">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+                        <td style="width: 40%; text-align: right; padding-right: 5px;">Mã NV:</td>
+                        <td style="width: 60%;">
+                            <input type="password" disabled="" id="txtUsername" size="10" style="ime-mode: disabled; background-color:Gainsboro;" value="@ViewBag.username">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Vị trí:</td>
+                        <td>
+                            <input disabled="" type="text" id="txtPlaceNo" style="ime-mode: disabled; background-color:Gainsboro;" value="@ViewBag.placeNo">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Mã vạch:</td>
+                        <td>
+                            <input disabled="" type="text" id="txtBarcode" style="ime-mode: disabled; background-color:Gainsboro;" value="@ViewBag.barcode">
+                            <input hidden="hidden" type="text" id="txtReason" style="ime-mode: disabled; background-color:Gainsboro;" value="Tiếp tục chuyển công đoạn">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: right; padding-right: 5px;">Kết quả:</td>
+                        <td>
+                            <span id="lblResult" class="cResult" style="background-color:red">@ViewBag.result</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="Message" style="height: 160px;">
+                <textarea readonly id="txtMessage" style="position:absolute;z-index:2;height: 156px;overflow-x: hidden;">@ViewBag.message</textarea>
+            </div>
+            <input type="button" id="btnCancel" class="Button" value="Hủy bỏ" onclick="Cancel()" style="margin-left: 10px; width:120px; background-color:red;color:white;">
+            <input type="button" id="btnConfirm" class="Button" value="Xác nhận" onclick="ConfirmBefore()" style="float:right; margin-right: 10px; width:120px; background-color:blue;color:white;visibility: visible;">
+        </div>
+    </div>
+</form>
+<script type="text/javascript">
+    var Cancel = function () {
+        window.location = '@Url.Action("Index", "Production")';
+    };
+    function SetStyleResultNG() {
+        document.getElementById('lblResult').style.backgroundColor = 'Red';
+    }
+    function ConfirmBefore() {
+        document.getElementById('txtMessage').value = "Đang xử lý...";
+        setTimeout(Confirm, 10);
+    }
+    function Confirm() {
+        var username = $.trim(document.getElementById('txtUsername').value);
+        var placeNo = $.trim(document.getElementById('txtPlaceNo').value);
+        var barcode = $.trim(document.getElementById('txtBarcode').value);
+        var reason = $.trim(document.getElementById('txtReason').value);
+        $.ajax({
+            type: "GET",
+            cache: false,
+            async: false,
+            url: '@Url.Action("VerifyProduct", "Production")?username=' + username + '&placeNo=' + placeNo + '&barcode=' + barcode + '&reason=' + reason,
+            dataType: "text",
+            success: SubmitAfter,
+            error: AjaxErrorSubmitAfter
+        });
+    }
+    var SubmitAfter = function (data) {
+        var parameter = data.split("#");
+        var result = parameter[0];
+        var message = parameter[1];
+        document.getElementById('lblResult').innerText = result;
+        document.getElementById('txtMessage').value = message;
+        if (result == 'NG') {
+            SetStyleResultNG();
+        } else {
+            Cancel();
+        }
+        return false;
+    }
+    var AjaxErrorSubmitAfter = function (xhr) {
+        if (xhr.status == 999) {
+            document.getElementById('txtMessage').value = 'Không thể kết nối với máy chủ';
+        } else if (xhr.status == 500) {
+            document.getElementById('txtMessage').value = 'Tiếp tục chuyển công đoạn thất bại (ErrorCode: 500)';
+        };
+        document.getElementById('txtMessage').value = 'Tiếp tục chuyển công đoạn thất bại (Error)';
+    }
+</script>
+

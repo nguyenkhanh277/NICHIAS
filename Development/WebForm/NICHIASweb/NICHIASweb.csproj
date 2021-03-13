@@ -130,9 +130,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
-    <Compile Include="Controllers\CheckProductController.cs" />
-    <Compile Include="Controllers\StockOutController.cs" />
-    <Compile Include="Controllers\ScanBarcodeController.cs" />
+    <Compile Include="Controllers\ProductionController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -202,13 +200,11 @@
     <Content Include="Views\Web.config" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
-    <Content Include="Views\ScanBarcode\Index.cshtml" />
-    <Content Include="Views\CheckProduct\Index.cshtml" />
+    <Content Include="Views\Production\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\ScanBarcode\End.cshtml" />
-    <Content Include="Views\ScanBarcode\Continue.cshtml" />
-    <Content Include="Views\StockOut\Index.cshtml" />
+    <Content Include="Views\Production\End.cshtml" />
+    <Content Include="Views\Production\Continue.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

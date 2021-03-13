@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace NICHIASweb.Controllers
 {
-    public class ScanBarcodeController : Controller
+    public class ProductionController : Controller
     {
         ConnectionManagement _connectionManagement = new ConnectionManagement();
         DbBusiness _dbBusiness = new DbBusiness();
@@ -16,7 +16,6 @@ namespace NICHIASweb.Controllers
         enum CompletedStatusValue { None, OK, NG }
         enum RequestScanValue { No, Yes }
         enum StatusValue { NoUse, Using }
-        enum ControlSerialData { Error, Warning, Reset }
         string _reason = "";
         string _username = "";
         string _barcode = "";
@@ -25,7 +24,7 @@ namespace NICHIASweb.Controllers
         string _scanInOut = "";
         float _dungSai = 5;
 
-        string _scanBarcodeIdCurrent = "";
+        string _productionIdCurrent = "";
         int _stepNoCurrent = 0;
         string _stepNameCurrent = "";
         float _dryingTimeCurrent = 0;
@@ -35,7 +34,7 @@ namespace NICHIASweb.Controllers
         float _dryingTimeActualCurrent = 0;
         int _resultStatusActualCurrent = 0;
 
-        string _scanBarcodeIdPrev = "";
+        string _productionIdPrev = "";
         int _stepNoPrev = 0;
         float _dryingTimePrev = 0;
         DateTime _timeStartPrev = new DateTime();
@@ -57,46 +56,29 @@ namespace NICHIASweb.Controllers
             return View();
         }
 
-        public ActionResult End(string placeNo, string barcode, string result, string message)
+        public ActionResult End(string username, string placeNo, string barcode, string result, string message)
         {
+            ViewBag.username = username;
             ViewBag.placeNo = placeNo;
             ViewBag.barcode = barcode;
             ViewBag.result = result;
             ViewBag.message = message;
-            _dbBusiness.SendAlarm(_barcode, _partNumber, _stepNoCurrent, _description, (int)ControlSerialData.Reset, _username, _connectionManagement.GetDefaultConnection());
             return View();
         }
 
-        public ActionResult Continue(string placeNo, string barcode, string result, string message)
+        public ActionResult Continue(string username, string placeNo, string barcode, string result, string message)
         {
+            ViewBag.username = username;
             ViewBag.placeNo = placeNo;
             ViewBag.barcode = barcode;
             ViewBag.result = result;
             ViewBag.message = message;
-            _dbBusiness.SendAlarm(_barcode, _partNumber, _stepNoCurrent, _description, (int)ControlSerialData.Reset, _username, _connectionManagement.GetDefaultConnection());
             return View();
         }
-
-        [ActionName("Send_Alarm")]
-        public ActionResult Send_Alarm()
+        
+        [ActionName("VerifyProduct")]
+        public ActionResult VerifyProduct(string username, string placeNo, string barcode, string reason)
         {
-            _dbBusiness.SendAlarm(_barcode, _partNumber, _stepNoCurrent, _description, (int)ControlSerialData.Reset, _username, _connectionManagement.GetDefaultConnection());
-            return Content("");
-        }
-
-        [ActionName("Scan_Barcode")]
-        public ActionResult Scan_Barcode(string placeNo, string barcode, string reason)
-        {
-            /*
-            *****placeNo*****
-            Vao-Nhà sấy
-            Ra-Nhà sấy
-
-            Vao-Máy khử tĩnh điện
-
-            Ra-Khu vực chờ
-            */
-
             try
             {
                 _dungSai = _dbBusiness.GetDungSai(_connectionManagement.GetDefaultConnection());
@@ -150,13 +132,6 @@ namespace NICHIASweb.Controllers
             {
                 _result = "NG";
                 _description = "";
-            }
-            if (_result == "NG")
-            {
-                if (!String.IsNullOrEmpty(_continues))
-                    _dbBusiness.SendAlarm(_barcode, _partNumber, _stepNoCurrent, _description, (int)ControlSerialData.Warning, _username, _connectionManagement.GetDefaultConnection());
-                else
-                    _dbBusiness.SendAlarm(_barcode, _partNumber, _stepNoCurrent, _description, (int)ControlSerialData.Error, _username, _connectionManagement.GetDefaultConnection());
             }
             return Content(_result + "#" + _description + "#" + _continues);
         }
@@ -259,14 +234,14 @@ namespace NICHIASweb.Controllers
                     _dryingTimePrev = float.Parse(productMatrixPrev.Rows[0]["DryingTime"].ToString()) * 60;
                 else//Bước trước yêu cầu phải scan
                 {
-                    DataTable scanBarcodePrev = _dbBusiness.GetScanBarcode(_barcode, "", _connectionManagement.GetDefaultConnection());
-                    if (scanBarcodePrev.Rows.Count > 0 && scanBarcodePrev.Rows[0]["StepNo"].ToString() == _stepNoCurrent.ToString())
+                    DataTable productionPrev = _dbBusiness.GetProduction(_barcode, "", _connectionManagement.GetDefaultConnection());
+                    if (productionPrev.Rows.Count > 0 && productionPrev.Rows[0]["StepNo"].ToString() == _stepNoCurrent.ToString())
                     { }
                     else
                     {
                         result = false;
                         _description += "KHÔNG ĐÚNG VỊ TRÍ" + Environment.NewLine;
-                        MessageStepNo("Vị trí phải là ", scanBarcodePrev);
+                        MessageStepNo("Vị trí phải là ", productionPrev);
                     }
                 }
             }
@@ -278,22 +253,22 @@ namespace NICHIASweb.Controllers
             bool result = true;
             if (_stepNoPrev > 0)
             {
-                DataTable scanBarcodePrev = _dbBusiness.GetScanBarcode(_barcode, _stepNoPrev.ToString(), _connectionManagement.GetDefaultConnection());
-                if (scanBarcodePrev.Rows.Count == 0)//Bước trước chưa được nhập
+                DataTable productionPrev = _dbBusiness.GetProduction(_barcode, _stepNoPrev.ToString(), _connectionManagement.GetDefaultConnection());
+                if (productionPrev.Rows.Count == 0)//Bước trước chưa được nhập
                 {
                     result = false;
                     _description += "KHÔNG ĐÚNG VỊ TRÍ" + Environment.NewLine;
-                    scanBarcodePrev = _dbBusiness.GetScanBarcode(_barcode, "", _connectionManagement.GetDefaultConnection());
-                    MessageStepNo("Vị trí phải là ", scanBarcodePrev);
+                    productionPrev = _dbBusiness.GetProduction(_barcode, "", _connectionManagement.GetDefaultConnection());
+                    MessageStepNo("Vị trí phải là ", productionPrev);
                 }
-                else if (scanBarcodePrev.Rows.Count > 0 && scanBarcodePrev.Rows[0]["ScanOut"].ToString() == "")//Bước trước chưa kết thúc
+                else if (productionPrev.Rows.Count > 0 && productionPrev.Rows[0]["ScanOut"].ToString() == "")//Bước trước chưa kết thúc
                 {
                     //Tính thời gian sấy bước trước
-                    _timeStartPrev = DateTime.Parse(scanBarcodePrev.Rows[0]["ScanIn"].ToString());
+                    _timeStartPrev = DateTime.Parse(productionPrev.Rows[0]["ScanIn"].ToString());
                     _timeEndPrev = DateTime.Now;
                     _timeSpanPrev = _timeEndPrev - _timeStartPrev;
                     _dryingTimeActualPrev = float.Parse(_timeSpanPrev.TotalMinutes.ToString("N0"));
-                    _scanBarcodeIdPrev = scanBarcodePrev.Rows[0]["Id"].ToString();
+                    _productionIdPrev = productionPrev.Rows[0]["Id"].ToString();
                     //So sánh thời gian sấy thực tế > thời gian sấy yêu cầu + dung sai -> Quá thời gian
                     if (_dryingTimePrev > 0 && _dryingTimeActualPrev > _dryingTimePrev + _dungSai)
                     {
@@ -344,10 +319,10 @@ namespace NICHIASweb.Controllers
         private bool VerifyTimeCurrent()
         {
             bool result = false;
-            DataTable scanBarcodeCurrent = _dbBusiness.GetScanBarcode(_barcode, _stepNoCurrent.ToString(), _connectionManagement.GetDefaultConnection());
+            DataTable productionCurrent = _dbBusiness.GetProduction(_barcode, _stepNoCurrent.ToString(), _connectionManagement.GetDefaultConnection());
             if (_scanInOut == "Vao")//Vị trí scan là đầu Vao
             {
-                if (scanBarcodeCurrent.Rows.Count > 0 && scanBarcodeCurrent.Rows[0]["ScanIn"].ToString() != "")//Bước sấy đã được nhập rồi thì không cho scan lần 2
+                if (productionCurrent.Rows.Count > 0 && productionCurrent.Rows[0]["ScanIn"].ToString() != "")//Bước sấy đã được nhập rồi thì không cho scan lần 2
                 {
                     _description += "KHÔNG ĐÚNG VỊ TRÍ" + Environment.NewLine;
                     MessageStepName("Vị trí phải là ", "Ra", _stepNoCurrent);
@@ -357,12 +332,12 @@ namespace NICHIASweb.Controllers
             }
             else//Vị trí scan là đầu ra
             {
-                if (scanBarcodeCurrent.Rows.Count == 0)//Bước sấy chưa được nhập
+                if (productionCurrent.Rows.Count == 0)//Bước sấy chưa được nhập
                 {
                     _description += "KHÔNG ĐÚNG VỊ TRÍ" + Environment.NewLine;
                     MessageStepName("Vị trí phải là ", "Vao", _stepNoCurrent);
                 }
-                else if (scanBarcodeCurrent.Rows.Count > 0 && scanBarcodeCurrent.Rows[0]["ScanOut"].ToString() != "")//Bước sấy đã được kết thúc rồi thì không cho scan lần 2
+                else if (productionCurrent.Rows.Count > 0 && productionCurrent.Rows[0]["ScanOut"].ToString() != "")//Bước sấy đã được kết thúc rồi thì không cho scan lần 2
                 {
                     _description += "KHÔNG ĐÚNG VỊ TRÍ" + Environment.NewLine;
                     MessageStepName("Vị trí phải là ", "Vao", _stepNoNext);
@@ -370,11 +345,11 @@ namespace NICHIASweb.Controllers
                 else
                 {
                     //Tính thời gian sấy bước trước
-                    _timeStartCurrent = DateTime.Parse(scanBarcodeCurrent.Rows[0]["ScanIn"].ToString());
+                    _timeStartCurrent = DateTime.Parse(productionCurrent.Rows[0]["ScanIn"].ToString());
                     _timeEndCurrent = DateTime.Now;
                     _timeSpanCurrent = _timeEndCurrent - _timeStartCurrent;
                     _dryingTimeActualCurrent = float.Parse(_timeSpanCurrent.TotalMinutes.ToString("N0"));
-                    _scanBarcodeIdCurrent = scanBarcodeCurrent.Rows[0]["Id"].ToString();
+                    _productionIdCurrent = productionCurrent.Rows[0]["Id"].ToString();
                     //So sánh thời gian sấy thực tế > thời gian sấy yêu cầu + dung sai -> Quá thời gian
                     if (_dryingTimeCurrent > 0 && _dryingTimeActualCurrent > _dryingTimeCurrent + _dungSai)
                     {
@@ -439,14 +414,14 @@ namespace NICHIASweb.Controllers
                 _completedStatus = (int)CompletedStatusValue.NG;
             if (_scanInOut == "Vao")//Vị trí scan là đầu Vao
             {
-                if (_dbBusiness.ScanIn(_barcode, _partNumber, _stepNoCurrent, _dryingTimeCurrent, (int)ResultStatusValue.Processing, (int)CompletedStatusValue.None, (int)StatusValue.Using, _username, _scanBarcodeIdPrev, _timeEndPrev, _dryingTimeActualPrev, _resultStatusActualPrev, "Automatic", _connectionManagement.GetDefaultConnection()))
+                if (_dbBusiness.ScanIn(_barcode, _partNumber, _stepNoCurrent, _dryingTimeCurrent, (int)ResultStatusValue.Processing, (int)CompletedStatusValue.None, (int)StatusValue.Using, _username, _productionIdPrev, _timeEndPrev, _dryingTimeActualPrev, _resultStatusActualPrev, "Automatic", _connectionManagement.GetDefaultConnection()))
                     result = true;
                 else
                     _description += "Xác nhận sản phẩm sấy thất bại do không kết nối được máy chủ" + Environment.NewLine;
             }
             else//Vị trí scan là đầu ra
             {
-                if (!String.IsNullOrEmpty(_scanBarcodeIdCurrent) && _dbBusiness.ScanOut(_scanBarcodeIdCurrent, _timeEndCurrent, _dryingTimeActualCurrent, _resultStatusActualCurrent, _reason, _completedStatus, _username, _barcode, _partNumber, _stepNoNext, _dryingTimeNext, (int)ResultStatusValue.Processing, (int)CompletedStatusValue.None, (int)StatusValue.Using, _connectionManagement.GetDefaultConnection()))
+                if (!String.IsNullOrEmpty(_productionIdCurrent) && _dbBusiness.ScanOut(_productionIdCurrent, _timeEndCurrent, _dryingTimeActualCurrent, _resultStatusActualCurrent, _reason, _completedStatus, _username, _barcode, _partNumber, _stepNoNext, _dryingTimeNext, (int)ResultStatusValue.Processing, (int)CompletedStatusValue.None, (int)StatusValue.Using, _connectionManagement.GetDefaultConnection()))
                     result = true;
                 else
                 {
