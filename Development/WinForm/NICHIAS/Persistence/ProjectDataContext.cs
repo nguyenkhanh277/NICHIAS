@@ -64,11 +64,11 @@ namespace NICHIAS.Persistence
         public virtual DbSet<Machine> Machines { get; set; }
         public virtual DbSet<Step> Steps { get; set; }
         public virtual DbSet<Product> Products { get; set; }
-        public virtual DbSet<ProductMatrix> ProductMatrixs { get; set; }
-        public virtual DbSet<Order> Orders { get; set; }
-        public virtual DbSet<OrderDetail> OrderDetails { get; set; }
-        public virtual DbSet<Production> Productions { get; set; }
-        public virtual DbSet<ProductionDetail> ProductionDetails { get; set; }
+        public virtual DbSet<ProductProcess> ProductMatrixs { get; set; }
+        public virtual DbSet<PurchaseOrder> Orders { get; set; }
+        public virtual DbSet<PurchaseOrderDetail> OrderDetails { get; set; }
+        public virtual DbSet<ScheduleLot> Productions { get; set; }
+        public virtual DbSet<Production> ProductionDetails { get; set; }
         #endregion
 
     }

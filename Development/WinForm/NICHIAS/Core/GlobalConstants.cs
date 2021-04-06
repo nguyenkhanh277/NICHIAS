@@ -27,7 +27,7 @@ namespace NICHIAS.Core
         public enum GenderValue { Female, Male }
         public enum StatusValue { NoUse, Using }
         public enum RequestScanValue { No, Yes }
-        public enum ResultStatusValue { Processing, OK, Timeless, Timeout }
+        public enum ResultStatusValue { Processing, OK, NG }
         public enum CompletedStatusValue { None, OK, NG }
         public enum ProductionStatusValue { NotYet, Proceeding, Completed, Cancel }
         public enum LanguageValue { Vietnamese, English }

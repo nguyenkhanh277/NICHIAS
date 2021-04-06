@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -8,27 +8,17 @@ namespace NICHIAS.Core.Domain
     {
         #region Fields
         public string Id { get; set; }
-        public string OrderId { get; set; }
-        public DateTime ScheduleDate { get; set; }
-        public string LotNo { get; set; }
-        public string MachineId { get; set; }
-        public int SEQ { get; set; }
-        public string PartNumber { get; set; }
-        public string Size { get; set; }
-        public float ProductLength { get; set; }
-        public float ProductWidth { get; set; }
-        public float ProductHeight { get; set; }
-        public float ProductPCS { get; set; }
-        public float RollLength { get; set; }
-        public float RollWidth { get; set; }
-        public float RollHeight { get; set; }
-        public float RollPCS { get; set; }
-        public float PaintType { get; set; }
-        public float PCSPerLot { get; set; }
-        public float PCSPerBatch { get; set; }
-        public GlobalConstants.ProductionStatusValue ProductionStatus { get; set; }
-        public string Reason { get; set; }
-        public GlobalConstants.StatusValue Status { get; set; }
+        public string ScheduleLotId { get; set; }
+        public string ProductProcessId { get; set; }//Tại máy quấn -> Min ProcessNo thì in phiếu công đoạn
+        public string ProductType { get; set; }//Inner / Outers
+        //ScheduleLotId + I hoặc O + SEQ (00)
+        public string Barcode { get; set; }
+        public DateTime ScanIn { get; set; }
+        public DateTime? Limit { get; set; }
+        public DateTime? ScanOut { get; set; }
+        public float ActualProductionTime { get; set; }
+        public GlobalConstants.ResultStatusValue ResultStatus { get; set; }
+        public GlobalConstants.CompletedStatusValue CompletedStatus { get; set; }
         #endregion
     }
 }

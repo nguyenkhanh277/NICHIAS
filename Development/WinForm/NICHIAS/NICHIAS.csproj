@@ -111,12 +111,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\Domain\ProductionDetail.cs" />
-    <Compile Include="Core\Domain\OrderDetail.cs" />
-    <Compile Include="Core\Domain\Product.cs" />
-    <Compile Include="Core\Domain\ProductMatrix.cs" />
-    <Compile Include="Core\Domain\Order.cs" />
     <Compile Include="Core\Domain\Production.cs" />
+    <Compile Include="Core\Domain\PurchaseOrderDetail.cs" />
+    <Compile Include="Core\Domain\Product.cs" />
+    <Compile Include="Core\Domain\ProductProcess.cs" />
+    <Compile Include="Core\Domain\PurchaseOrder.cs" />
+    <Compile Include="Core\Domain\ScheduleLot.cs" />
     <Compile Include="Core\Domain\SettingMaster.cs" />
     <Compile Include="Core\Domain\Base.cs" />
     <Compile Include="Core\Domain\LanguageLibrary.cs" />
@@ -136,15 +136,14 @@
     <Compile Include="Core\Repositories\IRepository.cs" />
     <Compile Include="Persistence\Repositories\AuthorityGroupRepository.cs" />
     <Compile Include="Persistence\Repositories\CustomerRepository.cs" />
-    <Compile Include="Persistence\Repositories\ProductionDetailRepository.cs" />
-    <Compile Include="Persistence\Repositories\ProductMatrixRepository.cs" />
-    <Compile Include="Persistence\Repositories\OrderRepository.cs" />
-    <Compile Include="Persistence\Repositories\OrderDetailRepository.cs" />
     <Compile Include="Persistence\Repositories\ProductionRepository.cs" />
+    <Compile Include="Persistence\Repositories\ProductProcessRepository.cs" />
+    <Compile Include="Persistence\Repositories\PurchaseOrderRepository.cs" />
+    <Compile Include="Persistence\Repositories\PurchaseOrderDetailRepository.cs" />
+    <Compile Include="Persistence\Repositories\ScheduleLotRepository.cs" />
     <Compile Include="Persistence\Repositories\ProductRepository.cs" />
     <Compile Include="Persistence\Repositories\SettingMasterRepository.cs" />
     <Compile Include="Persistence\Repositories\LanguageLibraryRepository.cs" />
-    <Compile Include="Persistence\Repositories\StepRepository.cs" />
     <Compile Include="Persistence\Repositories\MachineRepository.cs" />
     <Compile Include="Persistence\Repositories\UserAuthorityRepository.cs" />
     <Compile Include="Persistence\Repositories\Repository.cs" />
@@ -197,42 +196,6 @@
     <Compile Include="View\Customers\frmCustomersAddEdit.Designer.cs">
       <DependentUpon>frmCustomersAddEdit.cs</DependentUpon>
     </Compile>
-    <Compile Include="View\Machines\frmMachines.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Machines\frmMachines.Designer.cs">
-      <DependentUpon>frmMachines.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Machines\frmMachinesAddEdit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Machines\frmMachinesAddEdit.Designer.cs">
-      <DependentUpon>frmMachinesAddEdit.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Products\frmProducts.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Products\frmProducts.Designer.cs">
-      <DependentUpon>frmProducts.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Products\frmProductsAddEdit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Products\frmProductsAddEdit.Designer.cs">
-      <DependentUpon>frmProductsAddEdit.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Steps\frmSteps.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Steps\frmSteps.Designer.cs">
-      <DependentUpon>frmSteps.cs</DependentUpon>
-    </Compile>
-    <Compile Include="View\Steps\frmStepsAddEdit.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="View\Steps\frmStepsAddEdit.Designer.cs">
-      <DependentUpon>frmStepsAddEdit.cs</DependentUpon>
-    </Compile>
     <Compile Include="View\Users\frmUsers.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -281,24 +244,6 @@
     <EmbeddedResource Include="View\Customers\frmCustomersAddEdit.resx">
       <DependentUpon>frmCustomersAddEdit.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="View\Machines\frmMachines.resx">
-      <DependentUpon>frmMachines.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Machines\frmMachinesAddEdit.resx">
-      <DependentUpon>frmMachinesAddEdit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Products\frmProducts.resx">
-      <DependentUpon>frmProducts.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Products\frmProductsAddEdit.resx">
-      <DependentUpon>frmProductsAddEdit.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Steps\frmSteps.resx">
-      <DependentUpon>frmSteps.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="View\Steps\frmStepsAddEdit.resx">
-      <DependentUpon>frmStepsAddEdit.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="View\Users\frmUsers.resx">
       <DependentUpon>frmUsers.cs</DependentUpon>
     </EmbeddedResource>
@@ -339,8 +284,10 @@
     <Content Include="icon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="View\Machines\" />
     <Folder Include="View\Orders\" />
     <Folder Include="View\Productions\" />
+    <Folder Include="View\Products\" />
     <Folder Include="View\Reports\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
